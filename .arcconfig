@@ -1,0 +1,5 @@
+{
+  "phabricator.uri" : "http://172.21.71.113:81/",
+  "differential.require-test-plan-field" : false,
+  "differential.show-test-plan-field" :  false
+}
