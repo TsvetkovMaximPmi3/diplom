@@ -34,8 +34,10 @@ struct Grid
 		// шаг для градиентного спуска
 		dx,
 		// функция показывающая состояние системы для градиентного спуска
-		Fxy;
-
+		Fxy,
+		// шаг для перемещения 
+		step;
+	std::vector<double> dfPred;
 	std::vector<int> fixPoint;
 
 	std::vector<Edge> edges;

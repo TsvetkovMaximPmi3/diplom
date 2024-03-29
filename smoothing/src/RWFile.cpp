@@ -10,7 +10,7 @@
 */
 Grid* ReadFile() 
 {
-   
+	std::ifstream fin;
     fin.open(inputFile.c_str());
     char buff[25];
     std::map<int, Knot> aPoints;
