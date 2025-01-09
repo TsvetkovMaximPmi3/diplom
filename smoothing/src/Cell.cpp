@@ -2,7 +2,7 @@
 #include "Grid.h"
 #include "Knot.h"
 #include"Algorithm.h"
-
+#include "Edge.h"
 
 /**
 * \brief Вернуть вектор координат точек ячейки
@@ -90,10 +90,6 @@ void Cell::InitIntervals(Grid* grid)
 		lenght += GetLenghtEdge(grid->aPoints, grid->edges[edge]);
 		intervals += grid->edges[edge].idPointsIn.size() - 1;
 	}
-	if (m_idealEdge != lenght / intervals)
-	{
-		int a = 0;
-	}
+
 	m_idealEdge = lenght / intervals;
-	int a = 0;
 }

@@ -70,6 +70,7 @@ Grid::Grid(Grid * grid)
 	speed = grid->speed;
 	energy = grid->energy;
 	Fxy = 0;
+	swap = grid->swap;
 	
 }
 Grid Grid::operator=(Grid* grid)

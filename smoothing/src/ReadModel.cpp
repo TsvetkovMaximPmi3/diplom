@@ -107,23 +107,7 @@ std::map <int, bool> GetFixKnots(const MbFace* face, Grid* grid, const MbSurface
 	//grid->aPoints2D[149].pt.x = 0;
 	//grid->aPoints2D[149].pt.y = 0;
 	int periodicy = srf->Periodicity();
-	//if (periodicy == 1)
-	//{
-	//	if (grid->aPoints2D[it->first].pt.x == srf->GetUMin())
-	//	{
-	//		grid->aPoints2D[it->first].pt.y = grid->aPoints2D[grid->aPoints[it->first]->idDuble].pt.y;
-	//		grid->aPoints2D[it->first].pt.x = srf->GetUMax();
-	//	}
-	//	else
-	//	{
-	//		if (grid->aPoints2D[it->first].pt.y == srf->GetUMin())
-	//		{
-	//			grid->aPoints2D[it->first].pt.x = grid->aPoints2D[grid->aPoints[it->first]->idDuble].pt.y;
-	//			grid->aPoints2D[it->first].pt.y = srf->GetUMax();
-	//		}
-	//	}
-	//}
-	//u =x v =y
+
 	std::map <int, bool> fixKnots;
 	int countLoops = face->GetLoopsCount();
 	int idPoles = 1;
@@ -540,35 +524,23 @@ MbSplineSurface* GetSrfNurbs(const char* modelDir,Grid* grid)
 		{
 			const MbAssembly* assembly;
 			assembly = dynamic_cast<const MbAssembly*> (model->GetItem(0));
-			//MbItem* item = assembly->SetItem(0);
-			//st = item->IsA();
 			const MbInstance* inst = dynamic_cast<const MbInstance*>(assembly->GetItem(0));
 			solid = dynamic_cast<const MbSolid*>(inst->GetItem());
-			int a = 0;
-
 		}
 	}
-	const MbFace* face = solid->GetFace(1);
-	//face = dynamic_cast<const MbFace*>(model->GetItem(0));
-	//if (solid->GetFacesCount() == 1)
-	//{
-	//	face = solid->GetFace(0);
-	//}
-	//else 
-	//{
-	//	//throw - 1;
-	//	face = solid->GetFace(1);
-	//}
+	// считывание именно первого Face, возможны вылеты, когда в модели несколько Face а сетка только для одного
+	const MbFace* face = solid->GetFace(0);
+
 	MbSurface *srf = const_cast<MbSurface*>(&face->GetSurface());
 	const MbSurface *srf1 = &srf->GetBasisSurface();
-	//int a = srf1->Periodicity();
-	//int b = srf->Periodicity();
-	//MbeSpaceType s = srf1->Family();
-	//MbeSpaceType s1 = srf1->Type();
 	MbSplineSurface* srfNurbs = face->GetSurface().NurbsSurface(true);
+	// проекция сетки на MbSplineSurface
 	ProectionOn2D(grid, srfNurbs);
 	if (grid->fixPoint.size() == 0)
 	{
+		
+		// получение фиксированных точек (в этой функции лежит много тестового функционала, возможно 
+		// не нужного в будущем, такого как определения полярных точек и их дублей)
 		std::map<int, bool> fixKnots = GetFixKnots(face, grid, srf1);
 		for (std::map<int, Knot>::iterator it = grid->aPoints.begin(); it != grid->aPoints.end(); ++it)
 		{

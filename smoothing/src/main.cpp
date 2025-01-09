@@ -10,35 +10,44 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-const std::string inputFile =  "../../../konus_down_diplom.k";
+// файл для считывания сетки
+const std::string inputFile =  "../../../qdec_2D_halfquad_with_circlehole.txt";
+//const std::string inputFile = "../../../konus_down_diplom.k";
+
+// файл для записи сетки
 //const std::string outputFile = "../../../qdec_2D_halfquad_with_circlehole_res.txt";
 const std::string outputFile = "C:/myprogram/geomView/install/bin/qdec_halfquad_with_circlehole_res.txt";
+
 void main() 
 {
 
 	Grid* grid;
-
-	const char* modelDir = "../../../konus.c3d";
-
-	//сделать переменную define стрингом
+	// файл для считывания модели
+	const char* modelDir = "../../../2D-halfquad_with_circlehole.step";
+	//const char* modelDir = "../../../konus.c3d";
+	// если файл с разрешением txt, то подразумевается, что это файл со структой QDec
 	if (inputFile[inputFile.length() - 1] == 't')
 	{
+		// чтение структуры QDec
 		QDec* qdec = ReadQDec();
+		// конвертация из структуры QDec в Grid
 		grid = ConvetQDecFromGrid(qdec);
 	}
 	else
 	{
+		// чтение сетки из файла
 		grid = ReadFile();
 	}
-	//WriteFileQDec(grid,false);
+
+	// получение MbSplineSurface из модели 
 	MbSplineSurface* srfNurbs = GetSrfNurbs(modelDir, grid);
-	//MorphDiag(grid, true);
+	
+	// старт алгоритма сглаживания
 	StartIterations(grid, srfNurbs);
-	//AngleSmoothing(grid, srfNurbs);
+
+	// записть сетки в файл
 	WriteFileQDec(grid, false);
 
-	int a = 0;
 	delete grid;
-
 }
 

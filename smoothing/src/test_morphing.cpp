@@ -9,6 +9,7 @@
 #include <cur_hermit3d.h>
 #include <action_curve3d.h>
 #include <chrono>
+#include "Edge.h"
 const std::string inputFile = "../../../qdecTestMorphing.txt";
 const std::string outputFile = "../../../qdecTestMorphing_res.txt";
 geom_view gv;
@@ -114,6 +115,7 @@ void reSplitE(Grid* g)
 		ReSplitEdge(g, g->edges[2], g->edges[1].idPointsIn.size() - 1);
 	}
 }
+/*
 void edge1Intersection(Grid* grid, Cell& cell)
 {
 	for (auto indEdge : cell.edges)
@@ -161,6 +163,74 @@ void edge1Intersection(Grid* grid, Cell& cell)
 			}
 		}
 	}
+}*/
+
+void edgeIntersectionTest(Grid* grid, Cell& cell, int indEdge) {
+	//for (auto indEdge : cell.edges) {
+	Edge edge = grid->edges[indEdge];
+	for (int i = 0; i < edge.idPointsIn.size(); i++) {
+		for (auto ind2Edge : cell.edges) {
+			//int ind2Edge = Inc(indEdge, 2, 4);
+
+			if (indEdge == ind2Edge)
+				continue;
+			auto find = std::find(grid->edges[ind2Edge].idPointsIn.begin(), grid->edges[ind2Edge].idPointsIn.end(), edge.idPointsIn[i]);
+			if (find != grid->edges[ind2Edge].idPointsIn.end())
+				continue;
+
+			Edge edge1 = grid->edges[ind2Edge];
+			for (int j = 0; j < edge1.idPointsIn.size() - 1; j++) {
+				if (edge.idPointsIn[i] == edge.idPointsIn[j]) continue;
+				MbCartPoint3D p1 = grid->aPoints[edge.idPointsIn[i]].pt,
+					p2 = MbCartPoint3D(grid->aPoints[edge.idPointsIn[i]].pt.x + grid->aPoints[edge.idPointsIn[i]].moveVect.x,
+									   grid->aPoints[edge.idPointsIn[i]].pt.y + grid->aPoints[edge.idPointsIn[i]].moveVect.y,
+									   grid->aPoints[edge.idPointsIn[i]].pt.z + grid->aPoints[edge.idPointsIn[i]].moveVect.z),
+					p3 = grid->aPoints[edge1.idPointsIn[j]].pt,
+					p4 = grid->aPoints[edge1.idPointsIn[j + 1]].pt;
+				MbCartPoint3D p13(p1.x - p3.x, p1.y - p3.y, p1.z - p3.z),
+					p43(p4.x - p3.x, p4.y - p3.y, p4.z - p3.z), p21;
+
+				double d1343, d4321, d1321, d4343, d2121;
+				double denom;
+
+				double eps = Math::lengthEpsilon;
+
+				if (std::abs(p43.x) < eps && std::abs(p43.y) < eps && std::abs(p43.z) < eps) {
+					grid->aPoints[edge1.idPointsIn[i]].peresech = false;
+					continue;
+				}
+
+				p21 = MbCartPoint3D(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+				if (std::abs(p21.x) < eps && std::abs(p21.y) < eps && std::abs(p21.z) < eps) {
+					grid->aPoints[edge1.idPointsIn[i]].peresech = false;
+					continue;
+				}
+				d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
+				d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
+				d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
+				d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
+				d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
+
+				denom = d2121 * d4343 - d4321*d4321;
+				if (std::abs(denom) < eps) {
+					grid->aPoints[edge1.idPointsIn[i]].peresech = false;
+					continue;
+				}
+
+				double numer = d1343 * d4321 - d1321 * d4343;
+				double mua = numer / denom;
+				double mub = (d1343 + d4321 * mua) / d4343;
+
+				if (mua - eps <= 0 || mub - eps < 0 || mua + eps >= 1 || mub + eps >= 1) {
+					grid->aPoints[edge1.idPointsIn[i]].peresech = false;
+					continue;
+				}
+				grid->aPoints[edge1.idPointsIn[i]].peresech = true;
+				WriteFileQDec(grid, false);
+			}
+		}
+	}
+	//}
 }
 
 void moveControl(void* callback_data, std::vector<std::string>& sId, double x, double y, double z)
@@ -212,26 +282,11 @@ void moveControl(void* callback_data, std::vector<std::string>& sId, double x, d
 
 
 	}
-
-	
-	//std::vector<Edge> e;
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	e.push_back(g->grid->edges[i]);
-	//}
-	//
-	//
-	//std::vector<std::vector<int>> res = addPointMatrx(g->grid, e, false);// = createMatrixPoints(g->grid, e,false);
-	//for (int i = 0; i < res.size(); i++)
-	//{
-	//	for (int j = 0; j < res[i].size(); j++)
-	//	{
-	//		g->otherPt.push_back(res[i][j]);
-	//	}
-	//}
 	for (auto cell : g->grid->aCells)
 	{
-		edge1Intersection(g->grid,cell);
+		for (auto edge : cell.edges) {
+			edgeIntersectionTest(g->grid, cell,edge);
+		}
 	}
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	
@@ -366,7 +421,9 @@ void main()
 	//*/
 	for (auto cell : g->grid->aCells)
 	{
-		edgeIntersection(g->grid, cell);
+		for (auto edge : cell.edges) {
+			edgeIntersectionTest(g->grid, cell, edge);
+		}
 	}
 	
 	WriteTestFile(g);

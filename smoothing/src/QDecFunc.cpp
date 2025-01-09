@@ -1,4 +1,5 @@
 #include "QDecFunc.h"
+#include "Edge.h"
 
 void LineMorphing(Grid * grid, const Edge& edge) {
 	MbVector3D vecPt1 = grid->aPoints[edge.pt1()].moveVect;
@@ -115,6 +116,7 @@ void ReSplitEdge(Grid* grid, Edge& e, int intervals) {
 }
 
 void MorphDiag(Grid * grid, bool flag) {
+	// проходим по всем ячейкам и строим с помощью билинейного морфинга диагонали
 	for (int i = 0; i < grid->aCells.size(); i++) {
 		std::vector<Edge> e;
 
@@ -129,6 +131,7 @@ void MorphDiag(Grid * grid, bool flag) {
 		}
 
 		Grid g = Grid(Knots, cell, e);
+		// переразбиваем ребра на одинаковое количество интервалов
 		if (e[0].idPointsIn.size() < e[1].idPointsIn.size()) {
 			ReSplitEdge(&g, g.edges[0], e[1].idPointsIn.size() - 1);
 			ReSplitEdge(&g, g.edges[2], e[1].idPointsIn.size() - 1);
@@ -139,6 +142,7 @@ void MorphDiag(Grid * grid, bool flag) {
 		for (int j = 0; j < e.size(); j++) {
 			e[j] = g.edges[j];
 		}
+		// получаем точки диагонали
 		std::vector<std::vector<int>> res = addPointMatrx(&g, e, flag);
 		Edge diag1, diag2;
 
@@ -175,9 +179,6 @@ void MorphDiag(Grid * grid, bool flag) {
 			}
 			grid->edges.push_back(diag2);
 		}
-		//WriteFileQDec(grid, false);
-
-		int a = 0;
 	}
 
 	//иницализация идеальной диагонали

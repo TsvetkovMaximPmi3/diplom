@@ -14,7 +14,7 @@ const extern std::string outputFile;
 
 /**
 * \brief Cчитать .k файл и сформировать сетку Grid
-* \return сетка
+* \return grid сетка
 */
 Grid* ReadFile();
 
@@ -24,6 +24,15 @@ Grid* ReadFile();
 */
 void WriteFile(Grid* grid);
 
+/**
+* \brief Записать в файл .k id вершин, координаты вершин и порядок их соединения ячейки для структуры QDec
+* \param [in] grid Сетка
+*/
 void WriteFileQDec(Grid* grid, bool App);
+
+/**
+* \brief Cчитать .k файл и сформировать структуру QDec
+* \return QDec сетка
+*/
 QDec* ReadQDec();
 #endif //RWFILE_H
